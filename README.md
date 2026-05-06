@@ -1,19 +1,27 @@
-# 🕸️ Phantom Consensus — Strategic Consensus Engine
+# Phantom Consensus
 
-A risk-weighted optimization engine for political consensus building. Processes representatives, proposals, objections, and relationships to output strategic agreements with alliance detection.
+## Team Information
+- **Team Name**: Seski Boys
+- **Year**: 2nd
+- **All-Female Team**: No
 
-## 🎯 Overview
+## Architecture Overview
 
-Phantom Consensus is designed for competitive hackathon scenarios where naive approaches (sort by priority, sort by influence) score ~35/100, while strategic approaches score 90+/100. The engine handles adversarial test patterns including:
+#### Describe your approach here. Keep it short and clear.
 
-- **Trojan Horse** representatives (high influence, high betrayal)
-- **Poison Pill** proposals (high priority, universal objection)
-- **False Friends** (asymmetric trust relationships)
-- **Faction Infiltrators** (betray own faction members)
-- **Ghost references** (invalid IDs across files)
-- **Dirty data** (null values, type mismatches, duplicates)
+- **Data Cleaning**: We implemented a multi-stage sanitization pipeline that normalizes IDs (strip whitespace, lowercase), casts string numbers to floats, handles null values with domain-specific defaults (influence: 50, severity: 1, trust: 0), clamps out-of-bounds values to valid ranges, and removes ghost references through cross-file referential integrity checks. Deduplication keeps the first occurrence for representatives and relations, while proposals retain the highest priority instance. Malformed CSV rows are skipped silently without aborting the parse.
 
-## 🚀 Quick Start
+- **Alliance Detection**: We compute a relationship_score = trust × (1 - betrayal_prob) for each directed pair, capturing the real reliability of connections. Alliances require bidirectional scores ≥ 40, preventing False Friend scenarios where asymmetric trust exists. We also calculate faction_betrayal_risk as the average betrayal probability toward same-faction members, identifying infiltrators who betray their own group (threshold: 0.65).
+
+- **Proposal Prioritization**: Rather than using raw priority scores, we compute proposal_viability = priority × (1 - controversy), where controversy = objection_weight / (10 × 100 × num_reps). Objection weight is the sum of (severity × influence) across all objectors, ensuring powerful opponents have proportional impact. This naturally filters Poison Pills—proposals with high priority but near-universal objection get low viability scores.
+
+- **Consensus Strategy**: Our engine excludes Trojan Horse representatives (max outgoing betrayal_prob > 0.60), Faction Infiltrators (avg faction betrayal > 0.65), and representatives who object to every selected proposal. We select all proposals with viability ≥ 1.0, sorted by viability descending. Supporting representatives are filtered by the above criteria and ranked by influence. Edge case fallbacks ensure at least one proposal and one representative in all scenarios, selecting the least dangerous options when all candidates are excluded.
+
+**Note:** Please do not change the format or spelling of anything in this README. The fields are extracted using a script, so any changes to the structure or formatting may break the extraction process.
+
+---
+
+## Quick Start
 
 ### Installation
 
@@ -33,7 +41,7 @@ python consensus_engine.py
 streamlit run dashboard.py
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 phantom-consensus/
@@ -61,7 +69,7 @@ phantom-consensus/
 └── LIMITATIONS.md                  # Known limitations
 ```
 
-## 🧮 Core Formulas
+## Core Formulas
 
 ### Relationship Score
 ```
@@ -82,7 +90,7 @@ faction_betrayal_risk(R) = avg(betrayal_prob(R → M)) for M in same faction
 ```
 Identifies infiltrators who betray their own faction members.
 
-## 🎚️ Thresholds
+## Thresholds
 
 | Constant | Value | Purpose |
 |----------|-------|---------|
@@ -91,7 +99,7 @@ Identifies infiltrators who betray their own faction members.
 | `PROPOSAL_VIABILITY_MIN` | 1.0 | Minimum viability to include proposal |
 | `FACTION_INFILTRATOR_THRESHOLD` | 0.65 | Exclude reps with avg faction betrayal > 65% |
 
-## 📊 Output Format
+## Output Format
 
 ```json
 {
@@ -106,7 +114,7 @@ Identifies infiltrators who betray their own faction members.
 }
 ```
 
-## 🧪 Testing
+## Testing
 
 Run the comprehensive test suite:
 
@@ -120,7 +128,7 @@ Run debug analysis:
 python debug_analysis.py
 ```
 
-## 🛡️ Dirty Data Handling
+## Dirty Data Handling
 
 The engine handles:
 
@@ -132,7 +140,7 @@ The engine handles:
 - **Ghost references**: Drop records referencing non-existent IDs
 - **Malformed CSV rows**: Skip silently without aborting parse
 
-## 📈 Sample Results
+## Sample Results
 
 On the provided test data:
 
@@ -144,7 +152,7 @@ On the provided test data:
 
 See [RESULTS.md](RESULTS.md) for detailed analysis.
 
-## 🎓 Strategic Approach
+## Strategic Approach
 
 See [APPROACH.md](APPROACH.md) for:
 - Strategic decision framework
@@ -153,7 +161,7 @@ See [APPROACH.md](APPROACH.md) for:
 - Trap handling strategies
 - Data cleaning pipeline
 
-## ⚠️ Known Limitations
+## Known Limitations
 
 See [LIMITATIONS.md](LIMITATIONS.md) for:
 - Fixed threshold constraints
@@ -161,7 +169,7 @@ See [LIMITATIONS.md](LIMITATIONS.md) for:
 - No proposal interdependencies
 - Scalability considerations
 
-## 🔧 Requirements
+## Requirements
 
 - Python 3.9+ (uses `list[str]` type hint syntax)
 - pandas >= 2.0.0
@@ -169,17 +177,10 @@ See [LIMITATIONS.md](LIMITATIONS.md) for:
 - streamlit >= 1.30.0
 - matplotlib >= 3.7.0
 
-## 📝 License
+## Additional Documentation
 
-This is a hackathon submission project. Use as reference or starting point for similar consensus-building systems.
-
-## 🤝 Contributing
-
-This is a competition submission, but feel free to fork and adapt for your own use cases.
-
-## 📧 Contact
-
-For questions about the implementation approach or strategic decisions, see the documentation files:
+For detailed information about the implementation:
 - Strategic approach: [APPROACH.md](APPROACH.md)
 - Results analysis: [RESULTS.md](RESULTS.md)
 - Known limitations: [LIMITATIONS.md](LIMITATIONS.md)
+- Implementation summary: [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
